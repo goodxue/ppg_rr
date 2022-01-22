@@ -10,7 +10,7 @@
 #include <vector>
 #include <chrono>
 //#include "PolyfitBoost.hpp"
-#include "PolyfitEigen.hpp"
+#include "PolyfitEigen.h"
 
 int main(int argc, const char *argv[]) {
     using namespace std::chrono;

@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include "rtwtypes.h"
 #include "omp.h"
-#include "interp1_f_types.h"
+//#include "interp1_f_types.h"
 
 /* Function Declarations */
 extern double ppval(const double pp_breaks[500], const double pp_coefs[1996],

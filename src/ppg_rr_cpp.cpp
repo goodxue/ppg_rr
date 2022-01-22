@@ -37,7 +37,7 @@ void ppg_rr(std::vector<double> ppg, std::vector<double> t){
             }
         }
         if (ppg2[i] >= max){
-            k[I] = t[j];
+            k[I] = t[i];
             I++;
         }
     }
@@ -48,7 +48,7 @@ void ppg_rr(std::vector<double> ppg, std::vector<double> t){
             n1++;
         }
     }
-    
+
 
 
 }

@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include "rtwtypes.h"
 #include "omp.h"
-#include "interp1_f_types.h"
+//#include "interp1_f_types.h"
 
 /* Function Declarations */
 extern void pwchcore(const double x[500], const double y[500], const double s

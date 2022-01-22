@@ -33,7 +33,7 @@
 # endif
 #endif
 
-//#include "tmwtypes.h"
+#include "tmwtypes.h"
 #endif
 
 /* End of code generation (rtwtypes.h) */
