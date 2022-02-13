@@ -8,7 +8,7 @@
 /* Include files */
 #include <string.h>
 #include "rt_nonfinite.h"
-#include "interp1_f.h"
+#include "interp1_f2.h"
 #include "pwchcore.h"
 
 /* Function Definitions */

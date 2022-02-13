@@ -7,7 +7,7 @@
 
 /* Include files */
 #include "rt_nonfinite.h"
-//#include "interp1_f2.h"
+//#include "interp1_f.h"
 #include "interp1.h"
 #include "ppval.h"
 #include "spline.h"
@@ -19,8 +19,8 @@ typedef struct {
 } struct_T;
 
 /* Function Definitions */
-void interp1SplineOrPCHIP(const double y[500], const double xi[500], double yi
-  [500], const double x[500])
+void interp1SplineOrPCHIP(const double y[500], const double xi[49901], double
+  yi[49901], const double x[500])
 {
   struct_T pp;
   int k;
@@ -29,7 +29,7 @@ void interp1SplineOrPCHIP(const double y[500], const double xi[500], double yi
 #pragma omp parallel for \
  num_threads(omp_get_max_threads())
 
-  for (k = 0; k < 500; k++) {
+  for (k = 0; k < 49901; k++) {
     if (rtIsNaN(xi[k])) {
       yi[k] = rtNaN;
     } else {
