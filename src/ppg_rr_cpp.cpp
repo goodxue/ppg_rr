@@ -1,7 +1,6 @@
 #include "ppg_rr_cpp.h"
 #include "PolyfitEigen.h"
 #include "interp1_f2.h"
-#include <algorithm>
 #include "spline_any.h"
 
 
@@ -9,62 +8,35 @@ using namespace Eigen;
 //using namespace std;
 
 
-void ppg_rr(std::vector<double> ppg, std::vector<double> t){
+void ppg_rr(std::vector<double> ppg, std::vector<double> t,bool save_file){
     int N = ppg.size();
     VectorXd t2  = Eigen::Map<VectorXd>(t.data(),t.size());
     t2 = t2 * 0.01;
-    //std::cout<<t2<<std::endl;
+
     std::vector<double> coeffJacobi = polyfit_Eigen(t, ppg, 3,std::vector<double>(), false);
     std::vector<double> testValuesYJacobi = polyval(coeffJacobi, t);
-    // std::cout<<"ppg_jx"<<testValuesYJacobi.size()<<std::endl;
-    // for (int i = 0;i < N;i++){
-    //     std::cout<<testValuesYJacobi[i]<<" ";
-    // }
-    // std::cout<<std::endl;
+
     for (int i = 0;i < ppg.size();i++){
         ppg[i] = ppg[i] - testValuesYJacobi[i];
     }
-    
-    // for (int i = 0;i < testValuesYJacobi.size();i++){
-    //     std::cout<<testValuesYJacobi[i]<<" ";
-    // }
-    // std::cout<<std::endl;
 
-    // double tc[500];
-    // tc[0] = 1;
-    // for (int i = 1; i< (N-1)*100+1; i++){
-    //     tc[i] = tc[i-1] + 0.01;
-    // }
     VectorXd tc = t2.transpose();
 
     double ppg2[N] ;
-    //std::cout<<"t_size:"<<t.size()<<"ppg_size:"<<ppg.size()<<"tc_size:"<<tc.size()<<std::endl;
+
     interp1_f2(&t2[0],&ppg[0],tc.data(),ppg2);
-    for (int i = 0;i < N;i++){
-        std::cout<<ppg2[i]<<" ";
-    }
-    std::cout<<std::endl;
+
     //int N2 = (N-1)*100+1;
     //寻找极大值点
     int I = 0;
     int ll = (N-1) / 30;
     RowVectorXd k = RowVectorXd::Zero(ll);
     for (int i = 15; i <= N - 16; i++){
-        // double max = __DBL_MIN__;
-        // for (int j = i-15;j <= i+15;j++  ){
-        //     if (ppg2[j] > max){
-        //         max = ppg2[j];
-        //     }
-        // }
         if (ppg2[i] >= (*std::max_element(&ppg2[i]-15,&ppg2[i] + 15))){
             k[I] = t2[i]; //k存储极大值所在时间点
             I++;
         }
     }
-    for (int i = 0;i < ll;i++){
-        std::cout<<k[i]<<" ";
-    }
-    std::cout<<std::endl;
     //计算RR间期并对应到各时刻
     int n1 = 0;
     for (int i = 0; i< ll;i++){
@@ -72,11 +44,10 @@ void ppg_rr(std::vector<double> ppg, std::vector<double> t){
             n1++;
         }
     }
-    std::cout<<"n1"<<n1<<std::endl;
+
     RowVectorXd rr = RowVectorXd::Zero(n1-1);
     int rr_size = n1-1;
     RowVectorXd tt = RowVectorXd::Zero(n1-1);
-    std::cout<<"1"<<std::endl;
 
     int tt_size = n1-1;
     int J = 0;
@@ -101,7 +72,7 @@ void ppg_rr(std::vector<double> ppg, std::vector<double> t){
             l = i;
         }
     }
-    std::cout<<"2"<<std::endl;
+
     rr_size = l+1;
     tt_size = l+1;
     int nn = tt_size;
@@ -109,6 +80,7 @@ void ppg_rr(std::vector<double> ppg, std::vector<double> t){
         rr_size--;
         tt_size--;
     }
+    //对提取的RR间期信号进行插值重采样，保证每秒两个数据点
     nn = tt_size;
     double m = (t2[N-1]-t2[0]+0.01)*2;
     double mm = (tt(nn-1)-tt(0))/(m-1);
@@ -121,19 +93,44 @@ void ppg_rr(std::vector<double> ppg, std::vector<double> t){
     for (int i = 1;i < num_mm;i++){
         t_rr[i] = tt[0] + i*mm;
     }
-    std::cout<<num_mm<<std::endl;
 
     double rr1[num_mm];
-    interp1_f2(tt.data(),rr.data(),t_rr,rr1);
+    //interp1_f2(tt.data(),rr.data(),t_rr,rr1);
     tk::spline s(std::vector<double>(tt.data(),tt.data()+tt.size()),std::vector<double> (rr.data(),rr.data()+rr.size()));
-    for (int i = 0;i < num_mm;i++){
-        std::cout<<rr1[i]<<" ";
-    }
-    std::cout<<std::endl;
-    
-    int n = num_mm;
-    //int t_rr1 = double(t[0])+0.5
-    
 
+    for (int i = 0;i < num_mm;i++){
+        rr1[i] = s(t_rr[i]);
+    }
+    int num_trr1 = (int(t2(N-1)) - int(t2(0)) - 0.5) / 0.5 + 1 ;
+    double t_rr1[num_trr1];
+    t_rr1[0] = t2[0];
+    for (int i = 1; i < num_trr1;i++){
+        t_rr1[i] = int(t2[0]) + i * 0.5;
+    }
+
+/********* DEBUG ***********/
+    if (save_file){
+        std::ofstream outfile("../checkMiddleValue.txt", std::ios::trunc);
+        outfile<<"t2:  ";
+        for (int i = 0; i < N;i++){
+            outfile<<t2[i]<<" ";
+        }
+        outfile<<"\n";
+
+        outfile<<"t_rr1:  ";
+        for (int i = 0; i < num_trr1;i++){
+            outfile<<t_rr1[i]<<" ";
+        }
+        outfile<<"\n";
+
+        outfile<<"rr1:  ";
+        for (int i = 0; i<num_mm;i++){
+            outfile<<rr1[i]<<" ";
+        }
+        outfile<<"\n";
+
+        std::cout<<"MiddleValues have saved to ../checkMiddleValue.txt"<<std::endl;
+        outfile.close();
+    }
 
 }

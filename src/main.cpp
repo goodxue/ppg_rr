@@ -7,7 +7,7 @@ int main()
 {
     std::vector<double> ppg (500);
     std::vector<double> v1 (500);
-    ifstream inFile("/home/xue/xwp_ws/netlogo/C++/1.csv", ios::in);
+    ifstream inFile("../1.csv", ios::in);
 	string lineStr;
 
     if(!inFile){
@@ -44,6 +44,6 @@ int main()
     // cout<<i<<endl;
 
 
-    ppg_rr(ppg,v1);
+    ppg_rr(ppg,v1,true);
     return 0;
 }
