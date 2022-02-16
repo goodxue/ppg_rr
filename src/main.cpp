@@ -15,13 +15,14 @@ int main()
     }
 
     int i = 0;
+    int st = 500;
 	while (getline(inFile, lineStr))
 	{
         i++;
-        if (i<=500){
+        if (i<=st){
             continue;
         }
-        else if(i >1000){
+        else if(i >st+500){
             break;
         }
 		// 打印整行字符串
@@ -33,12 +34,12 @@ int main()
         getline(ss, str, ',');
         int temp;
         //cout<<str<<endl;
-        v1[i-501] = atof(str.c_str());
+        v1[i-st-1] = atof(str.c_str());
 		getline(ss, str, ',');
-        ppg[i-501] = atof(str.c_str());
+        ppg[i-st-1] = atof(str.c_str());
 	}
     // for (int i = 0;i < ppg.size();i++){
-    //     cout<<v1[i]<<" ";
+    //     cout<<ppg[i]<<" ";
     // }
     // cout<<endl;
     // cout<<i<<endl;

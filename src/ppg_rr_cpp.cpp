@@ -31,8 +31,8 @@ void ppg_rr(std::vector<double> ppg, std::vector<double> t,bool save_file){
     int I = 0;
     int ll = (N-1) / 30;
     RowVectorXd k = RowVectorXd::Zero(ll);
-    for (int i = 15; i <= N - 16; i++){
-        if (ppg2[i] >= (*std::max_element(&ppg2[i]-15,&ppg2[i] + 15))){
+    for (int i = 15; i < N - 16; i++){
+        if (ppg2[i] >= (*std::max_element(&ppg2[i]-15,&ppg2[i] + 16))){
             k[I] = t2[i]; //k存储极大值所在时间点
             I++;
         }
@@ -85,7 +85,7 @@ void ppg_rr(std::vector<double> ppg, std::vector<double> t,bool save_file){
     double m = (t2[N-1]-t2[0]+0.01)*2;
     double mm = (tt(nn-1)-tt(0))/(m-1);
 
-    int num_mm = int((tt(nn-1)-tt(0))/mm)+2;
+    int num_mm = int((tt(nn-1)-tt(0))/mm+0.001)+1;
     double* t_rr = new double [num_mm]();
     t_rr[0] = tt[0];
     
@@ -93,29 +93,48 @@ void ppg_rr(std::vector<double> ppg, std::vector<double> t,bool save_file){
     for (int i = 1;i < num_mm;i++){
         t_rr[i] = tt[0] + i*mm;
     }
+    // for (int i =0;i<tt.size();i++){
+    //     std::cout<<tt[i]<<" ";
+    // }
+    // std::cout<<std::endl;
 
     double rr1[num_mm];
     //interp1_f2(tt.data(),rr.data(),t_rr,rr1);
-    tk::spline s(std::vector<double>(tt.data(),tt.data()+tt.size()),std::vector<double> (rr.data(),rr.data()+rr.size()));
+    tk::spline s(std::vector<double>(tt.data(),tt.data()+tt_size),std::vector<double> (rr.data(),rr.data()+rr_size),tk::spline::cspline);
 
     for (int i = 0;i < num_mm;i++){
         rr1[i] = s(t_rr[i]);
     }
     int num_trr1 = (int(t2(N-1)) - int(t2(0)) - 0.5) / 0.5 + 1 ;
     double t_rr1[num_trr1];
-    t_rr1[0] = t2[0];
-    for (int i = 1; i < num_trr1;i++){
-        t_rr1[i] = int(t2[0]) + i * 0.5;
+    //t_rr1[0] = t2[0];
+    for (int i = 0; i < num_trr1;i++){
+        t_rr1[i] = int(t2[0]) + (i+1) * 0.5;
     }
 
 /********* DEBUG ***********/
     if (save_file){
         std::ofstream outfile("../checkMiddleValue.txt", std::ios::trunc);
-        outfile<<"t2:  ";
-        for (int i = 0; i < N;i++){
-            outfile<<t2[i]<<" ";
+        outfile<<"k:  ";
+        for (int i = 0; i <k.size();i++){
+            outfile<<k[i]<<" ";
         }
         outfile<<"\n";
+
+        outfile<<"tt:  ";
+        for (int i = 0; i <rr_size;i++){
+            outfile<<tt[i]<<" ";
+        }
+        outfile<<"\n";
+
+        outfile<<"rr:  ";
+        for (int i = 0; i <rr_size;i++){
+            outfile<<rr[i]<<" ";
+        }
+        outfile<<"\n";
+
+        outfile<<"mm:  "<<mm<<"\n";
+        outfile<<"num_mm:  "<<num_mm<<"\n";
 
         outfile<<"t_rr1:  ";
         for (int i = 0; i < num_trr1;i++){
